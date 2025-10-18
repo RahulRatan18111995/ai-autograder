@@ -2,13 +2,15 @@
   "version": 2,
   "builds": [
     {
-      "src": "student_api/main.py",
-      "use": "@vercel/python"
+      "src": "api/*.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "15mb" }
     }
   ],
   "routes": [
-    { "src": "/generate", "dest": "student_api/main.py" },
-    { "src": "/.*", "dest": "student_api/main.py" }
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1.py"
+    }
   ]
 }
-

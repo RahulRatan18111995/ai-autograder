@@ -1,41 +1,18 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 import os
-import logging
+from fastapi import FastAPI, HTTPException
+from starlette.requests import Request
 
-# --- Setup ---
 app = FastAPI()
-logging.basicConfig(level=logging.INFO)
 
-
-# --- Request Model ---
-class GenerateRequest(BaseModel):
-    email: str
-    secret: str
-    task: str
-    round: int
-    nonce: str
-    brief: str
-    evaluation_url: str
-
-
-# --- Test Route ---
 @app.get("/")
 def root():
     return {"message": "AI Autograder API is running!"}
 
-
-# --- Generate Route ---
 @app.post("/generate")
-def generate(payload: GenerateRequest):
-    logging.info(f"Received request: {payload.dict()}")
-
+async def generate(request: Request):
+    payload = await request.json()
     expected_secret = os.getenv("EXPECTED_SECRET")
-    if payload.secret != expected_secret:
-        logging.error("Invalid secret key provided!")
+    if payload.get("secret") != expected_secret:
         raise HTTPException(status_code=400, detail="Invalid secret")
-
-    # ✅ Replace this with your GitHub repo creation logic
-    repo_url = f"https://github.com/example/{payload.task}-repo"
+    repo_url = f"https://github.com/{payload['email']}/{payload['task']}"
     return {"status": "success", "repo_url": repo_url}
-
